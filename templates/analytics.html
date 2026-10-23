@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics — EcoSmart{% endblock %}
+
+{% block content %}
+<div class="space-y-8 py-4">
+    <!-- Header & Time Range Filter -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-900">Waste Analytics & Trends</h1>
+            <p class="text-sm text-slate-500">Data-driven insights on your historical waste composition & disposal activity</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button onclick="changeRange(7)" class="range-btn px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50" data-range="7">
+                7 Days
+            </button>
+            <button onclick="changeRange(30)" class="range-btn px-4 py-2 rounded-xl text-xs font-bold border border-blue-600 bg-blue-600 text-white" data-range="30">
+                30 Days
+            </button>
+            <button onclick="changeRange(90)" class="range-btn px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50" data-range="90">
+                90 Days
+            </button>
+        </div>
+    </div>
+
+    <!-- Scans Over Time Line Chart -->
+    <div class="bg-white p-6 md:p-8 rounded-3xl border border-slate-100 card-shadow space-y-4">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold text-slate-900">Scan Activity Over Time</h3>
+            <span class="text-xs text-slate-400 font-medium" id="chart-range-label">Last 30 Days</span>
+        </div>
+        <div id="trend-line-chart" class="w-full h-80 flex items-center justify-center">
+            <p class="text-xs text-slate-400">Loading trend analytics...</p>
+        </div>
+    </div>
+
+    <!-- 2 Column Charts: Bin Usage & Category Split -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- Bin Usage breakdown -->
+        <div class="lg:col-span-6 bg-white p-6 rounded-3xl border border-slate-100 card-shadow space-y-4">
+            <h3 class="text-base font-bold text-slate-900">Bin Usage Breakdown</h3>
+            <div id="bin-usage-chart" class="w-full h-64 flex items-center justify-center">
+                <p class="text-xs text-slate-400">Loading bin usage...</p>
+            </div>
+        </div>
+
+        <!-- Biodegradability Split -->
+        <div class="lg:col-span-6 bg-white p-6 rounded-3xl border border-slate-100 card-shadow space-y-4">
+            <h3 class="text-base font-bold text-slate-900">Material Composition</h3>
+            <div id="material-chart" class="w-full h-64 flex items-center justify-center">
+                <p class="text-xs text-slate-400">Loading material split...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentDays = 30;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadAnalyticsData(currentDays);
+    });
+
+    function changeRange(days) {
+        currentDays = days;
+        document.querySelectorAll('.range-btn').forEach(btn => {
+            if (parseInt(btn.getAttribute('data-range')) === days) {
+                btn.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+                btn.classList.remove('bg-white', 'text-slate-700');
+            } else {
+                btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+                btn.classList.add('bg-white', 'text-slate-700');
+            }
+        });
+
+        document.getElementById('chart-range-label').textContent = `Last ${days} Days`;
+        loadAnalyticsData(days);
+    }
+
+    async function loadAnalyticsData(days) {
+        const token = getAuthToken();
+        if (!token) return;
+
+        // Fetch Trends Line Chart
+        try {
+            const res = await fetch(`/api/analytics/trends/?days=${days}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                renderTrendChart(data);
+            }
+        } catch (e) { console.error(e); }
+
+        // Fetch Bin Usage
+        try {
+            const res = await fetch('/api/analytics/bin-usage/', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                renderBinUsageChart(data);
+            }
+        } catch (e) { console.error(e); }
+
+        // Fetch Material Split
+        try {
+            const res = await fetch('/api/analytics/biodegradability/', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                renderMaterialChart(data);
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    function renderTrendChart(trends) {
+        const container = document.getElementById('trend-line-chart');
+        if (!trends.dates || trends.dates.length === 0) {
+            container.innerHTML = `<p class="text-xs text-slate-400">No trend data available for this range yet</p>`;
+            return;
+        }
+
+        const traceOrganic = {
+            x: trends.dates,
+            y: trends.organic,
+            name: 'Organic',
+            type: 'scatter',
+            mode: 'lines+markers',
+            line: { color: '#2E8B57', width: 3 }
+        };
+
+        const traceRecyclable = {
+            x: trends.dates,
+            y: trends.recyclable,
+            name: 'Recyclable',
+            type: 'scatter',
+            mode: 'lines+markers',
+            line: { color: '#3B82F6', width: 3 }
+        };
+
+        const traceHazardous = {
+            x: trends.dates,
+            y: trends.hazardous,
+            name: 'Hazardous',
+            type: 'scatter',
+            mode: 'lines+markers',
+            line: { color: '#B45309', width: 3 }
+        };
+
+        const layout = {
+            margin: { t: 20, b: 40, l: 40, r: 20 },
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            xaxis: { gridcolor: '#F1F5F9' },
+            yaxis: { gridcolor: '#F1F5F9' },
+            legend: { orientation: 'h', y: 1.15 }
+        };
+
+        Plotly.newPlot('trend-line-chart', [traceOrganic, traceRecyclable, traceHazardous], layout, { responsive: true, displayModeBar: false });
+    }
+
+    function renderBinUsageChart(bins) {
+        const container = document.getElementById('bin-usage-chart');
+        if (!bins || bins.length === 0) {
+            container.innerHTML = `<p class="text-xs text-slate-400">No bin data available</p>`;
+            return;
+        }
+
+        const data = [{
+            x: bins.map(b => b.bin_type),
+            y: bins.map(b => b.count),
+            type: 'bar',
+            marker: { color: bins.map(b => b.bin_color_code || '#3B82F6') }
+        }];
+
+        const layout = {
+            margin: { t: 20, b: 40, l: 30, r: 20 },
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            yaxis: { gridcolor: '#F1F5F9' }
+        };
+
+        Plotly.newPlot('bin-usage-chart', data, layout, { responsive: true, displayModeBar: false });
+    }
+
+    function renderMaterialChart(mat) {
+        const container = document.getElementById('material-chart');
+        if (!mat || (mat.biodegradable === 0 && mat.non_biodegradable === 0)) {
+            container.innerHTML = `<p class="text-xs text-slate-400">No material data available</p>`;
+            return;
+        }
+
+        const data = [{
+            values: [mat.biodegradable, mat.non_biodegradable],
+            labels: ['Biodegradable', 'Non-Biodegradable'],
+            type: 'pie',
+            marker: { colors: ['#2E8B57', '#64748B'] }
+        }];
+
+        const layout = {
+            margin: { t: 10, b: 10, l: 10, r: 10 },
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)'
+        };
+
+        Plotly.newPlot('material-chart', data, layout, { responsive: true, displayModeBar: false });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% block title %}User Profile — EcoSmart{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-8 py-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-900">User Profile</h1>
+            <p class="text-sm text-slate-500">Manage your account details & activity stats</p>
+        </div>
+    </div>
+
+    <!-- Profile Details Card -->
+    <div class="bg-white p-8 rounded-3xl border border-slate-100 card-shadow space-y-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-2xl shadow-inner" id="prof-avatar">
+                    U
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900" id="prof-name">Loading User...</h3>
+                    <p class="text-xs text-slate-500" id="prof-email">email@example.com</p>
+                    <span class="inline-block mt-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold uppercase tracking-wider">EcoSmart Member</span>
+                </div>
+            </div>
+            <button onclick="toggleEditProfileModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all">
+                Edit Profile
+            </button>
+        </div>
+
+        <hr class="border-slate-100">
+
+        <!-- Activity Stats -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
+                <span class="text-xs text-slate-400 font-bold uppercase">Total Scans</span>
+                <p class="text-2xl font-extrabold text-slate-900" id="prof-total">0</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 space-y-1">
+                <span class="text-xs text-emerald-700 font-bold uppercase">Organic</span>
+                <p class="text-2xl font-extrabold text-emerald-700" id="prof-organic">0</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-blue-50 border border-blue-100 space-y-1">
+                <span class="text-xs text-blue-700 font-bold uppercase">Recyclable</span>
+                <p class="text-2xl font-extrabold text-blue-700" id="prof-recyclable">0</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-amber-50 border border-amber-100 space-y-1">
+                <span class="text-xs text-amber-700 font-bold uppercase">Hazardous</span>
+                <p class="text-2xl font-extrabold text-amber-700" id="prof-hazardous">0</p>
+            </div>
+        </div>
+
+        <!-- Account Actions -->
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+            <button onclick="toggleChangePasswordModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-all">
+                Change Password
+            </button>
+            <button onclick="handleLogout()" class="px-6 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded-xl text-xs flex items-center gap-2 transition-all">
+                <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div id="edit-profile-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white p-6 rounded-3xl max-w-md w-full space-y-4 card-shadow">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold text-slate-900">Edit Profile</h3>
+            <button onclick="toggleEditProfileModal()" class="text-slate-400 hover:text-slate-700">&times;</button>
+        </div>
+        <form onsubmit="handleProfileUpdate(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Full Name</label>
+                <input type="text" id="edit-name-input" required class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-600">
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="toggleEditProfileModal()" class="px-4 py-2 text-xs font-bold text-slate-600">Cancel</button>
+                <button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-md">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div id="change-pass-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white p-6 rounded-3xl max-w-md w-full space-y-4 card-shadow">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold text-slate-900">Change Password</h3>
+            <button onclick="toggleChangePasswordModal()" class="text-slate-400 hover:text-slate-700">&times;</button>
+        </div>
+        <form onsubmit="handleChangePassword(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Current Password</label>
+                <input type="password" id="old-pass-input" required class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-600">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">New Password</label>
+                <input type="password" id="new-pass-input" minlength="6" required class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-600">
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="toggleChangePasswordModal()" class="px-4 py-2 text-xs font-bold text-slate-600">Cancel</button>
+                <button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-md">Update Password</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        loadProfileData();
+    });
+
+    async function loadProfileData() {
+        const token = getAuthToken();
+        if (!token) return;
+
+        try {
+            const res = await fetch('/api/auth/profile/', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const user = await res.json();
+                document.getElementById('prof-name').textContent = user.name || user.email.split('@')[0];
+                document.getElementById('prof-email').textContent = user.email;
+                document.getElementById('edit-name-input').value = user.name || '';
+                document.getElementById('prof-avatar').textContent = (user.name || user.email).charAt(0).toUpperCase();
+                document.getElementById('prof-total').textContent = user.total_predictions;
+
+                if (user.category_breakdown) {
+                    document.getElementById('prof-organic').textContent = user.category_breakdown.organic || 0;
+                    document.getElementById('prof-recyclable').textContent = user.category_breakdown.recyclable || 0;
+                    document.getElementById('prof-hazardous').textContent = user.category_breakdown.hazardous || 0;
+                }
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    function toggleEditProfileModal() {
+        document.getElementById('edit-profile-modal').classList.toggle('hidden');
+    }
+
+    function toggleChangePasswordModal() {
+        document.getElementById('change-pass-modal').classList.toggle('hidden');
+    }
+
+    async function handleProfileUpdate(e) {
+        e.preventDefault();
+        const token = getAuthToken();
+        const name = document.getElementById('edit-name-input').value.trim();
+
+        try {
+            const res = await fetch('/api/auth/profile/', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ name })
+            });
+
+            if (res.ok) {
+                const updatedUser = await res.json();
+                localStorage.setItem('ecosmart_user', JSON.stringify(updatedUser));
+                showToast('Profile updated successfully!', 'success');
+                toggleEditProfileModal();
+                loadProfileData();
+                updateUIAuthWidget();
+            } else {
+                showToast('Failed to update profile.', 'error');
+            }
+        } catch (err) {
+            showToast('Network error while updating profile.', 'error');
+        }
+    }
+
+    async function handleChangePassword(e) {
+        e.preventDefault();
+        const token = getAuthToken();
+        const old_password = document.getElementById('old-pass-input').value;
+        const new_password = document.getElementById('new-pass-input').value;
+
+        try {
+            const res = await fetch('/api/auth/change-password/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ old_password, new_password })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                showToast('Password changed successfully!', 'success');
+                toggleChangePasswordModal();
+                document.getElementById('old-pass-input').value = '';
+                document.getElementById('new-pass-input').value = '';
+            } else {
+                const msg = data.old_password?.[0] || 'Password change failed.';
+                showToast(msg, 'error');
+            }
+        } catch (err) {
+            showToast('Network error while changing password.', 'error');
+        }
+    }
+</script>
+{% endblock %}

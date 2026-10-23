@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard — EcoSmart{% endblock %}
+
+{% block content %}
+<div class="space-y-8 py-4">
+    <!-- Top Header & Primary Action CTA -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-900">Good morning, <span id="dash-user-name">User</span></h1>
+            <p class="text-sm text-slate-500">Here is your personal waste segregation & sustainability summary</p>
+        </div>
+        <a href="/app/scan/" class="px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-xl shadow-blue-600/25 transition-all text-sm flex items-center justify-center gap-2 self-start md:self-auto">
+            <i data-lucide="plus-circle" class="w-5 h-5"></i>
+            Scan Waste Item
+        </a>
+    </div>
+
+    <!-- KPI Row -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <!-- Total Scans -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 card-shadow space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Scans</span>
+                <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <i data-lucide="scan" class="w-4 h-4"></i>
+                </div>
+            </div>
+            <p class="text-3xl font-extrabold text-slate-900" id="kpi-total">0</p>
+            <p class="text-[11px] text-slate-400">Items analyzed by AI</p>
+        </div>
+
+        <!-- Organic -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 card-shadow space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Organic</span>
+                <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <i data-lucide="apple" class="w-4 h-4"></i>
+                </div>
+            </div>
+            <p class="text-3xl font-extrabold text-emerald-600" id="kpi-organic">0</p>
+            <p class="text-[11px] text-slate-400">Green bin items</p>
+        </div>
+
+        <!-- Recyclable -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 card-shadow space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Recyclable</span>
+                <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <i data-lucide="recycle" class="w-4 h-4"></i>
+                </div>
+            </div>
+            <p class="text-3xl font-extrabold text-blue-600" id="kpi-recyclable">0</p>
+            <p class="text-[11px] text-slate-400">Blue bin items</p>
+        </div>
+
+        <!-- Hazardous -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 card-shadow space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Hazardous</span>
+                <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <i data-lucide="zap" class="w-4 h-4"></i>
+                </div>
+            </div>
+            <p class="text-3xl font-extrabold text-amber-600" id="kpi-hazardous">0</p>
+            <p class="text-[11px] text-slate-400">Red bin items</p>
+        </div>
+    </div>
+
+    <!-- Eco Insight Banner -->
+    <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-6 md:p-8 rounded-3xl card-shadow flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="space-y-2 flex-1">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold">
+                <i data-lucide="lightbulb" class="w-3.5 h-3.5"></i> ECO INSIGHT
+            </div>
+            <p class="text-base md:text-lg font-medium text-slate-100 leading-relaxed" id="eco-insight-text">
+                Scan your first waste item to start building your waste profile and receive personalized disposal insights.
+            </p>
+        </div>
+        <a href="/app/scan/" class="px-5 py-3 bg-white text-slate-900 hover:bg-slate-100 font-bold rounded-xl text-xs flex-shrink-0 flex items-center gap-2 shadow-lg">
+            <i data-lucide="scan" class="w-4 h-4"></i> Scan Waste
+        </a>
+    </div>
+
+    <!-- Analytics Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- Category Distribution (Donut Chart) -->
+        <div class="lg:col-span-6 bg-white p-6 rounded-3xl border border-slate-100 card-shadow space-y-4">
+            <h3 class="text-base font-bold text-slate-900">Waste Category Distribution</h3>
+            <div id="category-chart" class="w-full h-64 flex items-center justify-center">
+                <p class="text-xs text-slate-400">Loading chart...</p>
+            </div>
+        </div>
+
+        <!-- Biodegradable vs Non-Biodegradable (Bar Chart) -->
+        <div class="lg:col-span-6 bg-white p-6 rounded-3xl border border-slate-100 card-shadow space-y-4">
+            <h3 class="text-base font-bold text-slate-900">Biodegradable vs Non-Biodegradable</h3>
+            <div id="biodegradable-chart" class="w-full h-64 flex items-center justify-center">
+                <p class="text-xs text-slate-400">Loading chart...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Predictions Table -->
+    <div class="bg-white p-6 rounded-3xl border border-slate-100 card-shadow space-y-4">
+        <div class="flex items-center justify-between">
+            <h3 class="text-base font-bold text-slate-900">Recent Activity</h3>
+            <a href="/app/history/" class="text-xs font-bold text-blue-600 hover:underline">View All History &rarr;</a>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead>
+                    <tr class="border-b border-slate-100 text-slate-400 text-xs font-semibold uppercase">
+                        <th class="py-3 px-4">Item</th>
+                        <th class="py-3 px-4">Category</th>
+                        <th class="py-3 px-4">Confidence</th>
+                        <th class="py-3 px-4">Recommended Bin</th>
+                        <th class="py-3 px-4">Date</th>
+                        <th class="py-3 px-4 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="recent-predictions-tbody" class="divide-y divide-slate-50">
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-400 text-xs">
+                            No predictions yet. <a href="/app/scan/" class="text-blue-600 font-bold underline">Analyze your first waste item!</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const token = getAuthToken();
+        const user = getUserInfo();
+        if (user && document.getElementById('dash-user-name')) {
+            document.getElementById('dash-user-name').textContent = user.name || user.email.split('@')[0];
+        }
+
+        if (!token) return;
+
+        // Fetch Analytics Summary
+        try {
+            const summaryRes = await fetch('/api/analytics/summary/', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (summaryRes.ok) {
+                const s = await summaryRes.json();
+                document.getElementById('kpi-total').textContent = s.total_scans;
+                document.getElementById('kpi-organic').textContent = s.organic_count;
+                document.getElementById('kpi-recyclable').textContent = s.recyclable_count;
+                document.getElementById('kpi-hazardous').textContent = s.hazardous_count;
+                document.getElementById('eco-insight-text').textContent = s.eco_insight;
+
+                // Render Category Donut Chart
+                renderCategoryChart(s.organic_count, s.recyclable_count, s.hazardous_count);
+                // Render Biodegradable Chart
+                renderBiodegradableChart(s.biodegradable_count, s.non_biodegradable_count);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+
+        // Fetch Recent Predictions
+        try {
+            const predRes = await fetch('/api/predictions/?limit=5', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (predRes.ok) {
+                const data = await predRes.json();
+                const predictions = data.results || data;
+                renderRecentTable(predictions);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    });
+
+    function renderCategoryChart(organic, recyclable, hazardous) {
+        const container = document.getElementById('category-chart');
+        if (organic === 0 && recyclable === 0 && hazardous === 0) {
+            container.innerHTML = `<p class="text-xs text-slate-400">No data available yet</p>`;
+            return;
+        }
+
+        const data = [{
+            values: [organic, recyclable, hazardous],
+            labels: ['Organic', 'Recyclable', 'Hazardous'],
+            type: 'pie',
+            hole: 0.6,
+            marker: { colors: ['#2E8B57', '#3B82F6', '#B45309'] },
+            textinfo: 'label+percent',
+            insidetextorientation: 'radial'
+        }];
+
+        const layout = {
+            showlegend: false,
+            margin: { t: 10, b: 10, l: 10, r: 10 },
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)'
+        };
+
+        Plotly.newPlot('category-chart', data, layout, { responsive: true, displayModeBar: false });
+    }
+
+    function renderBiodegradableChart(bio, nonBio) {
+        const container = document.getElementById('biodegradable-chart');
+        if (bio === 0 && nonBio === 0) {
+            container.innerHTML = `<p class="text-xs text-slate-400">No data available yet</p>`;
+            return;
+        }
+
+        const data = [{
+            x: ['Biodegradable', 'Non-Biodegradable'],
+            y: [bio, nonBio],
+            type: 'bar',
+            marker: { color: ['#2E8B57', '#64748B'] }
+        }];
+
+        const layout = {
+            margin: { t: 20, b: 30, l: 30, r: 20 },
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            yaxis: { gridcolor: '#F1F5F9' }
+        };
+
+        Plotly.newPlot('biodegradable-chart', data, layout, { responsive: true, displayModeBar: false });
+    }
+
+    function renderRecentTable(predictions) {
+        const tbody = document.getElementById('recent-predictions-tbody');
+        if (!predictions || predictions.length === 0) return;
+
+        tbody.innerHTML = predictions.slice(0, 5).map(p => `
+            <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="py-3 px-4 flex items-center gap-3">
+                    <img src="${p.image}" class="w-10 h-10 rounded-xl object-cover bg-slate-900">
+                    <span class="font-bold text-slate-800 text-xs">Item #${p.id}</span>
+                </td>
+                <td class="py-3 px-4">
+                    <span class="px-2.5 py-1 rounded-lg text-xs font-bold capitalize ${
+                        p.category === 'organic' ? 'bg-emerald-100 text-emerald-800' :
+                        p.category === 'recyclable' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'
+                    }">
+                        ${p.category}
+                    </span>
+                </td>
+                <td class="py-3 px-4 text-xs font-semibold text-slate-700">${p.confidence_percentage}%</td>
+                <td class="py-3 px-4">
+                    <span class="inline-flex items-center gap-1.5 text-xs font-semibold" style="color: ${p.bin_color_code};">
+                        <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${p.bin_color_code};"></span>
+                        ${p.bin_type}
+                    </span>
+                </td>
+                <td class="py-3 px-4 text-xs text-slate-400">${new Date(p.created_at).toLocaleDateString()}</td>
+                <td class="py-3 px-4 text-right">
+                    <a href="/app/result/${p.id}/" class="text-xs font-bold text-blue-600 hover:underline">View &rarr;</a>
+                </td>
+            </tr>
+        `).join('');
+    }
+</script>
+{% endblock %}

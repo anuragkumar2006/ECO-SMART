@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}EcoSmart — Know your waste. Dispose smarter.{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto py-12 md:py-20 space-y-16">
+    <!-- Hero Section -->
+    <div class="text-center space-y-6">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold tracking-wide uppercase">
+            <i data-lucide="sparkles" class="w-4 h-4"></i> AI-POWERED WASTE MANAGEMENT
+        </div>
+        <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            Know your waste.<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-600">Dispose smarter.</span>
+        </h1>
+        <p class="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto font-normal leading-relaxed">
+            Upload an image of any waste item. Our deep-learning vision engine instantly identifies the category, recommends the appropriate bin, and tracks your sustainability footprint.
+        </p>
+        <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="/app/scan/" class="w-full sm:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-xl shadow-blue-600/25 transition-all text-center flex items-center justify-center gap-2 text-base">
+                <i data-lucide="scan" class="w-5 h-5"></i>
+                Scan Waste Now
+            </a>
+            <a href="/login/" class="w-full sm:w-auto px-8 py-4 bg-white hover:bg-slate-50 text-slate-800 font-bold border border-slate-200 rounded-2xl transition-all text-center text-base">
+                Sign In / Account
+            </a>
+        </div>
+    </div>
+
+    <!-- 3-Step Process Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8">
+        <div class="bg-white p-8 rounded-3xl border border-slate-100 card-shadow space-y-4">
+            <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xl">
+                01
+            </div>
+            <h3 class="text-xl font-bold text-slate-900">Upload Image</h3>
+            <p class="text-slate-600 text-sm leading-relaxed">
+                Take a photo or drag & drop any waste item image (plastic, organic scraps, e-waste, glass, or batteries).
+            </p>
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl border border-slate-100 card-shadow space-y-4">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl">
+                02
+            </div>
+            <h3 class="text-xl font-bold text-slate-900">AI Classification</h3>
+            <p class="text-slate-600 text-sm leading-relaxed">
+                PyTorch computer vision model analyzes visual features and categorizes waste into Organic, Recyclable, or Hazardous.
+            </p>
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl border border-slate-100 card-shadow space-y-4">
+            <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xl">
+                03
+            </div>
+            <h3 class="text-xl font-bold text-slate-900">Disposal & Analytics</h3>
+            <p class="text-slate-600 text-sm leading-relaxed">
+                Receive color-coded bin guidance and track your personal recycling stats over time with interactive charts.
+            </p>
+        </div>
+    </div>
+
+    <!-- Category Badges Showcase -->
+    <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl p-8 md:p-12 space-y-8 shadow-2xl">
+        <div class="max-w-2xl space-y-3">
+            <h2 class="text-2xl md:text-3xl font-bold">Supported Waste Categories</h2>
+            <p class="text-slate-400 text-sm">Deterministic disposal rules tied to configurable bin standards.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="p-6 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-3">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 font-semibold text-xs">
+                    GREEN BIN
+                </div>
+                <h4 class="text-lg font-bold text-white">Organic Waste</h4>
+                <p class="text-xs text-slate-400">Food scraps, fruit peels, leaves, biodegradable organic matter.</p>
+            </div>
+            <div class="p-6 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-3">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-blue-500/20 text-blue-400 font-semibold text-xs">
+                    BLUE BIN
+                </div>
+                <h4 class="text-lg font-bold text-white">Recyclable Waste</h4>
+                <p class="text-xs text-slate-400">Plastics, paper, cardboard, glass containers, aluminum cans.</p>
+            </div>
+            <div class="p-6 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-3">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-amber-500/20 text-amber-400 font-semibold text-xs">
+                    RED / HAZARD BIN
+                </div>
+                <h4 class="text-lg font-bold text-white">Hazardous Waste</h4>
+                <p class="text-xs text-slate-400">Batteries, electronics, medical waste, toxic chemicals.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

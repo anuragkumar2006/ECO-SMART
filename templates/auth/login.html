@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign In — EcoSmart{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto py-12">
+    <div class="bg-white p-8 rounded-3xl border border-slate-100 card-shadow space-y-6">
+        <div class="text-center space-y-2">
+            <h2 class="text-2xl font-bold text-slate-900">Welcome back</h2>
+            <p class="text-sm text-slate-500">Sign in to access your EcoSmart dashboard</p>
+        </div>
+
+        <form id="login-form" class="space-y-4" onsubmit="handleLoginSubmit(event)">
+            <div>
+                <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Email Address</label>
+                <input type="email" id="email" required placeholder="user@example.com" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Password</label>
+                <input type="password" id="password" required placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm">
+            </div>
+
+            <button type="submit" id="submit-btn" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all text-sm flex items-center justify-center gap-2">
+                Sign In
+            </button>
+        </form>
+
+        <div class="text-center pt-2 text-xs text-slate-500">
+            Don't have an account? <a href="/register/" class="text-blue-600 font-bold hover:underline">Register here</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function handleLoginSubmit(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submit-btn');
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Signing in...`;
+        lucide.createIcons();
+
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        try {
+            const res = await fetch('/api/auth/login/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem('ecosmart_access_token', data.access);
+                localStorage.setItem('ecosmart_refresh_token', data.refresh);
+                localStorage.setItem('ecosmart_user', JSON.stringify(data.user));
+                showToast('Signed in successfully!', 'success');
+                setTimeout(() => { window.location.href = '/app/dashboard/'; }, 400);
+            } else {
+                showToast(data.detail || 'Invalid email or password', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Sign In';
+            }
+        } catch (err) {
+            showToast('Network error while logging in.', 'error');
+            btn.disabled = false;
+            btn.textContent = 'Sign In';
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}Scan Waste — EcoSmart{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-8 py-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-900">Scan Waste Item</h1>
+            <p class="text-sm text-slate-500">Upload a clear photo for deep learning classification & disposal guidance</p>
+        </div>
+        <a href="/app/dashboard/" class="text-slate-500 hover:text-slate-800 text-xs font-semibold flex items-center gap-1">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Dashboard
+        </a>
+    </div>
+
+    <!-- Dropzone Card -->
+    <div class="bg-white p-8 rounded-3xl border border-slate-100 card-shadow space-y-6">
+        <form id="scan-form" onsubmit="handleScanSubmit(event)">
+            <input type="file" id="image-input" accept="image/jpeg,image/jpg,image/png" class="hidden" onchange="handleFileSelect(event)">
+            
+            <div id="dropzone" onclick="document.getElementById('image-input').click()" 
+                 class="border-2 border-dashed border-slate-200 hover:border-blue-500 rounded-2xl p-8 md:p-12 text-center cursor-pointer transition-all bg-slate-50/50 hover:bg-blue-50/30 flex flex-col items-center justify-center gap-4 group">
+                <div class="w-16 h-16 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-md shadow-blue-500/10">
+                    <i data-lucide="camera" class="w-8 h-8"></i>
+                </div>
+                <div>
+                    <p class="text-base font-bold text-slate-800">Click or drop waste image here</p>
+                    <p class="text-xs text-slate-400 mt-1">Supports JPG, JPEG, PNG (Max 10 MB)</p>
+                </div>
+            </div>
+
+            <!-- Image Preview Box -->
+            <div id="preview-box" class="hidden space-y-4 pt-2">
+                <div class="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 max-h-80 flex items-center justify-center">
+                    <img id="image-preview" src="" alt="Waste Preview" class="max-h-80 object-contain">
+                    <button type="button" onclick="resetFileSelection()" class="absolute top-3 right-3 bg-slate-900/80 hover:bg-rose-600 text-white p-2 rounded-xl text-xs font-semibold backdrop-blur-md transition-all">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="flex items-center justify-between text-xs text-slate-500">
+                    <span id="file-name-info">selected_file.jpg</span>
+                    <button type="button" onclick="document.getElementById('image-input').click()" class="text-blue-600 font-bold hover:underline">Change image</button>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="pt-6">
+                <button type="submit" id="analyze-btn" disabled class="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-2xl shadow-xl shadow-blue-600/20 transition-all text-base flex items-center justify-center gap-2">
+                    <i data-lucide="sparkles" class="w-5 h-5"></i>
+                    Analyze Waste with AI
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- AI Status Loading Modal / Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-3xl max-w-sm w-full text-center space-y-6 card-shadow">
+            <div class="w-20 h-20 rounded-full bg-blue-50 text-blue-600 mx-auto flex items-center justify-center relative">
+                <i data-lucide="brain-circuit" class="w-10 h-10 animate-pulse"></i>
+                <div class="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-slate-900">AI Analysis in Progress</h3>
+                <p class="text-xs text-slate-500 mt-1" id="loading-step-text">Preprocessing image tensors...</p>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div id="loading-bar" class="bg-blue-600 h-2 rounded-full w-1/3 transition-all duration-500"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedFile = null;
+
+    // Drag and drop handlers
+    const dropzone = document.getElementById('dropzone');
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropzone.classList.add('border-blue-500', 'bg-blue-50/50');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('border-blue-500', 'bg-blue-50/50');
+        }, false);
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            processSelectedFile(files[0]);
+        }
+    });
+
+    function handleFileSelect(e) {
+        if (e.target.files.length > 0) {
+            processSelectedFile(e.target.files[0]);
+        }
+    }
+
+    function processSelectedFile(file) {
+        if (file.size > 10 * 1024 * 1024) {
+            showToast('File exceeds 10MB maximum limit.', 'error');
+            return;
+        }
+
+        selectedFile = file;
+        document.getElementById('file-name-info').textContent = file.name;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('image-preview').src = e.target.result;
+            document.getElementById('dropzone').classList.add('hidden');
+            document.getElementById('preview-box').classList.remove('hidden');
+            document.getElementById('analyze-btn').disabled = false;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function resetFileSelection() {
+        selectedFile = null;
+        document.getElementById('image-input').value = '';
+        document.getElementById('preview-box').classList.add('hidden');
+        document.getElementById('dropzone').classList.remove('hidden');
+        document.getElementById('analyze-btn').disabled = true;
+    }
+
+    async function handleScanSubmit(e) {
+        e.preventDefault();
+        if (!selectedFile) return;
+
+        const token = getAuthToken();
+        if (!token) {
+            showToast('Please sign in to run AI analysis.', 'warning');
+            setTimeout(() => window.location.href = '/login/', 1000);
+            return;
+        }
+
+        // Show loading state modal
+        const overlay = document.getElementById('loading-overlay');
+        const stepText = document.getElementById('loading-step-text');
+        const loadingBar = document.getElementById('loading-bar');
+        overlay.classList.remove('hidden');
+
+        setTimeout(() => {
+            stepText.textContent = "Running PyTorch Deep Learning Model...";
+            loadingBar.style.width = "65%";
+        }, 600);
+
+        setTimeout(() => {
+            stepText.textContent = "Querying Recommendation Engine...";
+            loadingBar.style.width = "90%";
+        }, 1200);
+
+        const formData = new FormData();
+        formData.append('image', selectedFile);
+
+        try {
+            const res = await fetch('/api/predictions/', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                loadingBar.style.width = "100%";
+                showToast('Waste analysis complete!', 'success');
+                setTimeout(() => {
+                    window.location.href = `/app/result/${data.id}/`;
+                }, 400);
+            } else {
+                overlay.classList.add('hidden');
+                showToast(data.error || data.detail || 'Prediction failed.', 'error');
+            }
+        } catch (err) {
+            overlay.classList.add('hidden');
+            showToast('Error uploading waste image.', 'error');
+        }
+    }
+</script>
+{% endblock %}
